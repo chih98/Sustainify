@@ -139,11 +139,13 @@ class newRequestViewController: UIViewController, UINavigationControllerDelegate
             obj["location"] = locationL.text!
             obj["description"] = detailedDescription.text!
             obj["lat"] = lat!
-            obj["long"] = long!
-            obj["reference"] = PFUser.current()?.username!
+            obj["long"] = long! 
+            obj["geopoint"] = PFGeoPoint(latitude: lat!, longitude: long!)
+            obj["reference"] = PFUser.current()?.username ?? "Mistery Person"
+            obj["orgName"] = self.locationName ?? "No Name Passed"
             obj["status"] = "Waiting For Review"
             
-            let picture = PFFile(name: "cPicture.png", data: UIImageJPEGRepresentation(self.issuePIcture.image!, 0.5)!)
+            let picture = PFFile(name: "cPicture.png", data: UIImageJPEGRepresentation(self.issuePIcture.image!, 0.03)!)
       
             obj["picture"] = picture!
             
@@ -194,11 +196,11 @@ class newRequestViewController: UIViewController, UINavigationControllerDelegate
                     
                     currentInstallation?.saveInBackground()
                     
-                    PFCloud.callFunction(inBackground: "push", withParameters: ["channels": "USFCA"]) { (any, err) in
+                    PFCloud.callFunction(inBackground: "push", withParameters: ["channels": PFUser.current()?.object(forKey: "org") as? String ?? "none"]) { (any, err) in
                     if err == nil {
                        
                     } else {
-                       print("\n\n\n\n\n\n\n\n\n\n\n\n\n\(err)\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                        print("\n\n\n\n\n\n\n\n\n\n\n\n\n\(String(describing: err))\n\n\n\n\n\n\n\n\n\n\n\n\n")
                     }
                     
                 }

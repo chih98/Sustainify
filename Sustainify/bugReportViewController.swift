@@ -142,7 +142,7 @@ class bugReportViewController: UIViewController, UITextViewDelegate {
                     
                 } else {
                     
-                    let alert = UIAlertController(title: "Error", message: "                    \(err!.localizedDescription)", preferredStyle: .alert)
+                    let alert = UIAlertController(title: "Error", message: "\(err!.localizedDescription)", preferredStyle: .alert)
                     
                     alert.addAction(UIAlertAction(title: "Ok", style: .default, handler: nil))
                     

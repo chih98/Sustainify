@@ -58,7 +58,7 @@ class ViewController: UIViewController, UIImagePickerControllerDelegate, UINavig
     }()
             
             view.addSubview(fbLogInButton)
-            fbLogInButton.center = CGPoint(x: view.center.x, y: view.frame.height - 100)
+            fbLogInButton.center = CGPoint(x: view.center.x, y: self.prompt.center.y - 40)
             
             fbLogInButton.delegate = self
             

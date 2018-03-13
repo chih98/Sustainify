@@ -9,6 +9,7 @@
 import UIKit
 import Parse
 import FBSDKCoreKit
+import TouchVisualizer
 import ParseFacebookUtilsV4
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -27,6 +28,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
        
         FBSDKApplicationDelegate.sharedInstance().application(application, didFinishLaunchingWithOptions: launchOptions)
        
+        var config = Configuration()
+        config.color = .lightGray
+        
+        //Visualizer.start(config)
+        
         locationManager = CLLocationManager()
         locationManager?.requestWhenInUseAuthorization()
 

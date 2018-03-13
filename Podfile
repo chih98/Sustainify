@@ -16,6 +16,7 @@ target 'Sustainify' do
     pod 'FacebookCore'
     pod 'FacebookLogin'
     
+    pod 'TouchVisualizer'
   # Pods for Sustainify
 
 end

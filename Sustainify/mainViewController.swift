@@ -12,7 +12,7 @@ import MapKit
 import alerter
 
 class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManagerDelegate {
-
+    
     @IBOutlet weak var mapView: MKMapView!
     @IBOutlet weak var reportB: UIButton!
     
@@ -20,13 +20,13 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
     let locationManager = CLLocationManager()
     var canPost = false
     
-    var locationName: String?
-
+    var orgName: String = ""
+    
     @IBOutlet weak var feedbackb: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         mapView.delegate = self
         mapView.showsUserLocation = true
         locationManager.delegate = self
@@ -43,12 +43,12 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
         super.viewDidAppear(true)
         
         
-    
+        
         
         if theDef.bool(forKey: "welcomed") != true {
-        
-        performSegue(withIdentifier: "toWelcome", sender: nil)
-        theDef.set(true, forKey: "welcomed")
+            
+            performSegue(withIdentifier: "toWelcome", sender: nil)
+            theDef.set(true, forKey: "welcomed")
         }
         
         if CLLocationManager.locationServicesEnabled() {
@@ -60,12 +60,12 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
                 
             case .restricted, .denied:
                 performSegue(withIdentifier: "toNoLocation", sender: nil)
-            
+                
             case .authorizedAlways, .authorizedWhenInUse:
-               
+                
                 delay(bySeconds: 1.5, dispatchLevel: .background) {
-            self.zoomInToUser()
-        }
+                    self.zoomInToUser()
+                }
             }
         } else {
             performSegue(withIdentifier: "toNoLocation", sender: nil)
@@ -81,53 +81,50 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
         var longs: [Double?] = []
         var titles: [String?] = []
         var subtitles: [String?] = []
-
-    let query = PFQuery(className: "Reports")
-    query.whereKey("status", notEqualTo: "Resolved")
-    query.findObjectsInBackground { (downloadedObjs, err) in
         
-        let count = downloadedObjs?.count
-        
-        var i = 0
-        
-        while i != count {
+        let query = PFQuery(className: "Reports")
+        query.whereKey("status", notEqualTo: "Resolved")
+        query.findObjectsInBackground { (downloadedObjs, err) in
             
-          lats.append(downloadedObjs![i]["lat"] as? Double)
-          longs.append(downloadedObjs![i]["long"] as? Double)
-            titles.append(downloadedObjs![i]["title"] as? String)
-            subtitles.append(downloadedObjs![i]["location"] as? String)
+            let count = downloadedObjs?.count ?? 0
             
-            i += 1
-        }
-        
-      
-        let lCount = lats.count
-        
-        var annotations: [MKAnnotation] = []
-    
-        var n = 0
-        
-        while n != lCount {
-        
-            let annotation = MKPointAnnotation()
-            
-            annotation.coordinate = CLLocationCoordinate2DMake(lats[n]!, longs[n]!)
-            annotation.title = titles[n]!
-            annotation.subtitle = subtitles[n]!
+            for i in 0..<count {
+                
+                lats.append(downloadedObjs?[i]["lat"] as? Double)
+                longs.append(downloadedObjs?[i]["long"] as? Double)
+                titles.append(downloadedObjs?[i]["title"] as? String)
+                subtitles.append(downloadedObjs?[i]["location"] as? String)
+                
+            }
             
             
-            annotations.append(annotation)
+            let lCount = lats.count
             
-            n += 1
-        
-        }
-        
-        self.mapView.addAnnotations(annotations)
-        
-
-        self.locationManager.stopUpdatingLocation()
-        self.searchReigon()
-        
+            var annotations: [MKAnnotation] = []
+            
+            var n = 0
+            
+            while n != lCount {
+                
+                let annotation = MKPointAnnotation()
+                
+                annotation.coordinate = CLLocationCoordinate2DMake(lats[n]!, longs[n]!)
+                annotation.title = titles[n]!
+                annotation.subtitle = subtitles[n]!
+                
+                
+                annotations.append(annotation)
+                
+                n += 1
+                
+            }
+            
+            self.mapView.addAnnotations(annotations)
+            
+            
+            self.locationManager.stopUpdatingLocation()
+            self.searchReigon()
+            
         }
         
         
@@ -174,12 +171,12 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
         let userLocation = mapView.userLocation
         
         if (userLocation.location != nil) {
-        
-        let region = MKCoordinateRegionMakeWithDistance(
-            (userLocation.location?.coordinate)!, 500, 500)
-        
-        mapView.setRegion(region, animated: true)
-        self.reportPoints()
+            
+            let region = MKCoordinateRegionMakeWithDistance(
+                (userLocation.location?.coordinate)!, 500, 500)
+            
+            mapView.setRegion(region, animated: true)
+            self.reportPoints()
         }
     }
     
@@ -192,9 +189,9 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
     @IBAction func reportB(_ sender: AnyObject) {
         
         if canPost ==  true {
-        
-        performSegue(withIdentifier: "toReport", sender: nil)
-        
+            
+            performSegue(withIdentifier: "toReport", sender: nil)
+            
         } else {
             
             alerter(message: "You are in an unsupported reigon", dark: true, success: false)
@@ -208,10 +205,10 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
         alerter(message: "Report Sent", dark: true, success: true)
         
     }
-
+    
     
     // MARK: - Navigation
-
+    
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
@@ -219,9 +216,9 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
             
             let vc = segue.destination as? newRequestViewController
             
-            vc!.locationName = locationName!
+            vc!.locationName = orgName ?? "No Name"
             
-                       
+            
         }
         
         
@@ -254,33 +251,38 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
         
         let cl = mapView.userLocation.coordinate
         
-        let searchobj = PFGeoPoint(latitude: cl.latitude, longitude: cl.longitude)
+        let geopoint = PFGeoPoint(latitude: cl.latitude, longitude: cl.longitude)
         
         let query = PFQuery(className: "Schools")
-        query.whereKey("location", nearGeoPoint: searchobj)
-        query.getFirstObjectInBackground { (obj, err) in
+        
+        query.findObjectsInBackground { (objs, err) in
             if err == nil {
                 
-              if searchobj.distanceInKilometers(to: obj!["location"] as? PFGeoPoint) <= (obj!["radius"] as? Double)! {
+                var cp = false
                 
-                print(searchobj.distanceInKilometers(to: obj!["location"] as? PFGeoPoint!))
-                print(searchobj)
-                
-                self.title = "Sustainify - \((obj!["name"] as? String)!)"
-                
-                self.locationName = (obj!["name"] as? String)!
-                
-                self.canPost = true
+                for org in objs! {
                     
-                alerter(message: "Welcome to USFCA", dark: false, success: true)
+                    let loc = org["location"] as! PFGeoPoint
+                    let rad = org["radius"] as! Double
                     
-                } else {
-                
-                    alerter(message: "You are not in a suported location", dark: false)
-                    
+                    if geopoint.distanceInKilometers(to: loc) < rad {
+                        
+                        cp = true
+                        self.orgName = org["name"] as! String
+                        
+                    }
                     
                 }
                 
+                if cp == true {
+                    
+                    self.canPost = true
+                    
+                    
+                } else {
+                    
+                    alerter(message: "Not in Supported Reigon", dark: true, success: false)
+                }
                 
             }
         }
@@ -288,10 +290,10 @@ class mainViewController: UIViewController, MKMapViewDelegate, CLLocationManager
     }
     
     // MARK: - Downloading Markers
-
     
     
     
     
-
+    
+    
 }
